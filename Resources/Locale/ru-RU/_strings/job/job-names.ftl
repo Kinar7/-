@@ -124,3 +124,4 @@ JobBoxer = боксёр
 JobZookeeper = зоотехник
 
 job-name-botanist-gardener = садовник
+job-name-passenger-off-duty = сотрудник вне службы

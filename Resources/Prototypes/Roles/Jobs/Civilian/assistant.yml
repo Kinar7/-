@@ -6,6 +6,9 @@
   startingGear: PassengerGear
   icon: "JobIconPassenger"
   supervisors: job-supervisors-everyone
+  alternativeNames:
+  - name: job-name-passenger-off-duty
+    icon: JobIconPassenger
   #lust-edit access:
   #lust-edit - Maintenance
 

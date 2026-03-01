@@ -135,7 +135,7 @@ namespace Content.Server.GameTicking
                 if (job == null)
                     continue;
 
-                SpawnPlayer(_playerManager.GetSessionById(player), profiles[player], station, job, false);
+                SpawnPlayer(_playerManager.GetSessionById(player), profiles[player], station, job, lateJoin: false);
             }
 
             RefreshLateJoinAllowed();
@@ -150,6 +150,7 @@ namespace Content.Server.GameTicking
         private void SpawnPlayer(ICommonSession player,
             EntityUid station,
             string? jobId = null,
+            string? jobDisplayTitle = null,
             bool lateJoin = true,
             bool silent = false,
             bool canBeAntag = true) // Sunrise-Edit
@@ -169,13 +170,14 @@ namespace Content.Server.GameTicking
                     return;
             }
 
-            SpawnPlayer(player, character, station, jobId, lateJoin, silent, canBeAntag); // Sunrise-Edit
+            SpawnPlayer(player, character, station, jobId, jobDisplayTitle, lateJoin, silent, canBeAntag); // Sunrise-Edit
         }
 
         private void SpawnPlayer(ICommonSession player,
             HumanoidCharacterProfile character,
             EntityUid station,
             string? jobId = null,
+            string? jobDisplayTitle = null,
             bool lateJoin = true,
             bool silent = false,
             bool canBeAntag = true) // Sunrise-Edit
@@ -286,6 +288,11 @@ namespace Content.Server.GameTicking
 
             DoSpawn(player, character, station, jobId, silent, out var mob, out var jobPrototype, out var jobName, spawnPointType);
             // Sunrise edit end
+
+            // Sunrise-Start: Override the ID card job title if an alternative display name was requested.
+            if (jobDisplayTitle != null)
+                _stationSpawning.OverrideJobDisplayTitle(mob, jobDisplayTitle);
+            // Sunrise-End
 
             // Sunrise-Start
             if (HasComp<StationAntagsTargetsComponent>(station))
@@ -423,7 +430,7 @@ namespace Content.Server.GameTicking
         /// <param name="station">The station they're spawning on</param>
         /// <param name="jobId">An optional job for them to spawn as</param>
         /// <param name="silent">Whether or not the player should be greeted upon joining</param>
-        public void MakeJoinGame(ICommonSession player, EntityUid station, string? jobId = null, bool silent = false, bool canBeAntag = true) // Sunrise-Edit
+        public void MakeJoinGame(ICommonSession player, EntityUid station, string? jobId = null, string? jobDisplayTitle = null, bool silent = false, bool canBeAntag = true) // Sunrise-Edit
         {
             if (!_playerGameStatuses.ContainsKey(player.UserId))
                 return;
@@ -431,7 +438,7 @@ namespace Content.Server.GameTicking
             if (!_userDb.IsLoadComplete(player))
                 return;
 
-            SpawnPlayer(player, station, jobId, silent: silent, canBeAntag: canBeAntag); // Sunrise-Edit
+            SpawnPlayer(player, station, jobId, jobDisplayTitle, silent: silent, canBeAntag: canBeAntag); // Sunrise-Edit
         }
 
         /// <summary>

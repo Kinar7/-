@@ -291,67 +291,6 @@ namespace Content.Client.LateJoin
                         }
 
                         _jobButtons[id][prototype.ID].Add(jobButton);
-
-                        // Add buttons for each alternative name of this job
-                        foreach (var altName in prototype.AlternativeNames)
-                        {
-                            var altLabel = new Label
-                            {
-                                Margin = new Thickness(5f, 0, 0, 0)
-                            };
-
-                            var altButton = new JobButton(altLabel, prototype.ID, altName.LocalizedName, value);
-
-                            var altSelector = new BoxContainer
-                            {
-                                Orientation = LayoutOrientation.Horizontal,
-                                HorizontalExpand = true
-                            };
-
-                            var altIconTexture = new TextureRect
-                            {
-                                TextureScale = new Vector2(2, 2),
-                                VerticalAlignment = VAlignment.Center
-                            };
-
-                            var altIconId = altName.Icon ?? prototype.Icon;
-                            var altIcon = _prototypeManager.Index(altIconId);
-                            altIconTexture.Texture = _sprites.Frame0(altIcon.Icon);
-                            altSelector.AddChild(altIconTexture);
-
-                            altSelector.AddChild(altLabel);
-                            altButton.AddChild(altSelector);
-                            category.AddChild(altButton);
-
-                            altButton.OnPressed += _ => SelectedId.Invoke((id, altButton.JobId));
-
-                            if (!_jobRequirements.IsAllowed(prototype, (HumanoidCharacterProfile?)_preferencesManager.Preferences?.SelectedCharacter, out var altReason))
-                            {
-                                altButton.Disabled = true;
-
-                                if (!altReason.IsEmpty)
-                                {
-                                    var altTooltip = new Tooltip();
-                                    altTooltip.SetMessage(altReason);
-                                    altButton.TooltipSupplier = _ => altTooltip;
-                                }
-
-                                altSelector.AddChild(new TextureRect
-                                {
-                                    TextureScale = new Vector2(0.4f, 0.4f),
-                                    Stretch = TextureRect.StretchMode.KeepCentered,
-                                    Texture = _sprites.Frame0(new SpriteSpecifier.Texture(new ("/Textures/Interface/Nano/lock.svg.192dpi.png"))),
-                                    HorizontalExpand = true,
-                                    HorizontalAlignment = HAlignment.Right,
-                                });
-                            }
-                            else if (value == 0)
-                            {
-                                altButton.Disabled = true;
-                            }
-
-                            _jobButtons[id][prototype.ID].Add(altButton);
-                        }
                     }
                 }
             }

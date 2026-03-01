@@ -269,6 +269,22 @@ public sealed class StationSpawningSystem : SharedStationSpawningSystem
             _pdaSystem.SetOwner(idUid.Value, pdaComponent, entity, characterName);
     }
 
+    /// <summary>
+    /// Overrides the job title on the player's ID card after spawning.
+    /// Used when an alternative display name is selected at late-join.
+    /// </summary>
+    public void OverrideJobDisplayTitle(EntityUid entity, string jobDisplayTitle)
+    {
+        if (!InventorySystem.TryGetSlotEntity(entity, "id", out var idUid))
+            return;
+
+        var cardId = idUid.Value;
+        if (TryComp<PdaComponent>(idUid, out var pdaComponent) && pdaComponent.ContainedId != null)
+            cardId = pdaComponent.ContainedId.Value;
+
+        _cardSystem.TryChangeJobTitle(cardId, jobDisplayTitle);
+    }
+
 
     #endregion Player spawning helpers
 }

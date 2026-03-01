@@ -116,3 +116,4 @@ JobVisitor = Visitor
 JobWarden = Warden
 
 job-name-botanist-gardener = Gardener
+job-name-passenger-off-duty = Off-duty Employee

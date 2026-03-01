@@ -28,7 +28,7 @@ namespace Content.Server.GameTicking.Commands
         }
         public void Execute(IConsoleShell shell, string argStr, string[] args)
         {
-            if (args.Length != 2)
+            if (args.Length < 2 || args.Length > 3)
             {
                 shell.WriteError(Loc.GetString("shell-wrong-arguments-number"));
                 return;
@@ -78,7 +78,23 @@ namespace Content.Server.GameTicking.Commands
                     _adminManager.DeAdmin(player);
                 }
 
-                ticker.MakeJoinGame(player, station, id);
+                // Optional 3rd argument: a localization key for an alternative job display name.
+                // Validated server-side against the job's AlternativeNames list.
+                string? jobDisplayTitle = null;
+                if (args.Length == 3)
+                {
+                    var altKey = args[2];
+                    foreach (var alt in jobPrototype.AlternativeNames)
+                    {
+                        if (alt.Name == altKey)
+                        {
+                            jobDisplayTitle = alt.LocalizedName;
+                            break;
+                        }
+                    }
+                }
+
+                ticker.MakeJoinGame(player, station, id, jobDisplayTitle);
                 return;
             }
 
