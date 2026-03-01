@@ -176,6 +176,27 @@ public sealed partial class SRLateJoinGui : FancyWindow
                 JobList.AddChild(newButton);
 
                 _buttons.Add(jobId, newButton);
+
+                // Add buttons for each alternative name of this job
+                foreach (var altName in job.AlternativeNames)
+                {
+                    var altButton = new SRLateJoinJobButton(station, jobId, _gameTicker, _prototypeManager,
+                        altName.LocalizedName, altName.Icon);
+                    altButton.OnPressed += _ =>
+                    {
+                        Logger.InfoS("latejoin", $"Late joining as ID: {jobId} (alternative: {altName.LocalizedName})");
+                        _consoleHost.ExecuteCommand($"joingame {CommandParsing.Escape(jobId)} {station}");
+                        Close();
+                    };
+
+                    if (!_playManager.IsAllowed(job, (HumanoidCharacterProfile?)_preferencesManager.Preferences?.SelectedCharacter, out var altDenyReason))
+                    {
+                        altButton.Disabled = true;
+                        altButton.ToolTip = altDenyReason.ToString();
+                    }
+
+                    JobList.AddChild(altButton);
+                }
             }
         }
     }

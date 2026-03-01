@@ -5,6 +5,7 @@ using Content.Shared.Humanoid.Prototypes;
 using Content.Shared.Players.PlayTimeTracking;
 using Content.Shared.StatusIcon;
 using Robust.Shared.Prototypes;
+using Robust.Shared.Serialization;
 using Robust.Shared.Serialization.TypeSerializers.Implementations.Custom.Prototype;
 using Robust.Shared.Serialization.TypeSerializers.Implementations.Custom.Prototype.List;
 using Robust.Shared.Utility;
@@ -184,6 +185,38 @@ namespace Content.Shared.Roles
         [DataField("sexBlacklist")]
         public List<Sex> SexBlacklist = new();
         // Sunrise-Lust end
+
+        // Sunrise-Start
+        /// <summary>
+        /// Optional list of alternative display names and icons for this job.
+        /// Each entry can have its own localization key and icon while still
+        /// referencing the same underlying job for mechanics/systems.
+        /// </summary>
+        [DataField]
+        public List<JobAlternativeName> AlternativeNames = new();
+        // Sunrise-End
+    }
+
+    /// <summary>
+    /// Represents an alternative display name and icon for a job.
+    /// </summary>
+    [DataDefinition, Serializable, NetSerializable]
+    public sealed partial class JobAlternativeName
+    {
+        /// <summary>
+        /// Localization key for the alternative display name.
+        /// </summary>
+        [DataField(required: true)]
+        public string Name { get; private set; } = default!;
+
+        [ViewVariables(VVAccess.ReadOnly)]
+        public string LocalizedName => Loc.GetString(Name);
+
+        /// <summary>
+        /// Icon to use for this alternative name. Falls back to the job's default icon if not specified.
+        /// </summary>
+        [DataField]
+        public ProtoId<JobIconPrototype>? Icon { get; private set; }
     }
 
     /// <summary>

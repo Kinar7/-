@@ -6,6 +6,9 @@
   startingGear: BotanistGear
   icon: "JobIconBotanist"
   supervisors: job-supervisors-hop
+  alternativeNames:
+  - name: job-name-botanist-gardener
+    icon: JobIconBotanist
   access:
   - Service
   - Maintenance
