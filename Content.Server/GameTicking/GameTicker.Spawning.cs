@@ -135,7 +135,17 @@ namespace Content.Server.GameTicking
                 if (job == null)
                     continue;
 
-                SpawnPlayer(_playerManager.GetSessionById(player), profiles[player], station, job, lateJoin: false);
+                // Sunrise-Start: look up the player's preferred alt-name for this job, if any.
+                string? jobDisplayTitle = null;
+                var profile = profiles[player];
+                var jobId = job.Value;
+                if (profile.JobAlternativeNames.TryGetValue(jobId, out var altKey)
+                    && _prototypeManager.TryIndex<JobPrototype>(jobId, out var jobProto))
+                {
+                    jobDisplayTitle = jobProto.AlternativeNames.FirstOrDefault(a => a.Name == altKey)?.LocalizedName;
+                }
+                SpawnPlayer(_playerManager.GetSessionById(player), profile, station, jobId, jobDisplayTitle, lateJoin: false);
+                // Sunrise-End
             }
 
             RefreshLateJoinAllowed();

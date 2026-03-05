@@ -31,6 +31,15 @@ namespace Content.Shared.Preferences
         private static readonly Regex RestrictedNameRegex = new("[^А-Яа-яA-Za-zёЁ0-9, ,\\-,'.]"); // Sunrise-edit
         private static readonly Regex ICNameCaseRegex = new(@"^(?<word>\w)|\b(?<word>\w)(?=\w*$)");
 
+        // Sunrise-Start
+        /// <summary>
+        /// Preferred alternative display name per job for initial spawn.
+        /// Key is the job prototype ID; value is the <see cref="JobAlternativeName.Name"/> localization key.
+        /// </summary>
+        [DataField]
+        private Dictionary<ProtoId<JobPrototype>, string> _jobAlternativeNames = new();
+        // Sunrise-End
+
         /// <summary>
         /// Job preferences for initial spawn.
         /// </summary>
@@ -122,6 +131,13 @@ namespace Content.Shared.Preferences
         /// <see cref="_jobPriorities"/>
         /// </summary>
         public IReadOnlyDictionary<ProtoId<JobPrototype>, JobPriority> JobPriorities => _jobPriorities;
+
+        // Sunrise-Start
+        /// <summary>
+        /// <see cref="_jobAlternativeNames"/>
+        /// </summary>
+        public IReadOnlyDictionary<ProtoId<JobPrototype>, string> JobAlternativeNames => _jobAlternativeNames;
+        // Sunrise-End
 
         /// <summary>
         /// <see cref="_antagPreferences"/>
@@ -215,6 +231,9 @@ namespace Content.Shared.Preferences
                 new HashSet<ProtoId<TraitPrototype>>(other.TraitPreferences),
                 new Dictionary<string, RoleLoadout>(other.Loadouts))
         {
+            // Sunrise-Start
+            _jobAlternativeNames = new Dictionary<ProtoId<JobPrototype>, string>(other._jobAlternativeNames);
+            // Sunrise-End
         }
 
         /// <summary>
@@ -440,6 +459,22 @@ namespace Content.Shared.Preferences
         {
             return new(this) { PreferenceUnavailable = mode };
         }
+
+        // Sunrise-Start
+        /// <summary>
+        /// Returns a copy of this profile with the preferred alternative name for the given job updated.
+        /// Pass <see langword="null"/> to clear any stored preference for that job.
+        /// </summary>
+        public HumanoidCharacterProfile WithJobAlternativeName(ProtoId<JobPrototype> jobId, string? altNameKey)
+        {
+            var dict = new Dictionary<ProtoId<JobPrototype>, string>(_jobAlternativeNames);
+            if (altNameKey == null)
+                dict.Remove(jobId);
+            else
+                dict[jobId] = altNameKey;
+            return new(this) { _jobAlternativeNames = dict };
+        }
+        // Sunrise-End
 
         public HumanoidCharacterProfile WithAntagPreferences(IEnumerable<ProtoId<AntagPrototype>> antagPreferences)
         {
@@ -733,6 +768,20 @@ namespace Content.Shared.Preferences
             if (voice is null || !CanHaveVoice(voice, Sex))
                 Voice = SharedHumanoidAppearanceSystem.DefaultSexVoice[sex];
             // Sunrise-TTS-End
+
+            // Sunrise-Start: Remove alt-name preferences for unknown jobs or jobs whose alt key no longer exists.
+            var altNamesToRemove = new ValueList<ProtoId<JobPrototype>>();
+            foreach (var (jobId, altKey) in _jobAlternativeNames)
+            {
+                if (!prototypeManager.TryIndex<JobPrototype>(jobId, out var jobProto) ||
+                    !jobProto.AlternativeNames.Any(a => a.Name == altKey))
+                {
+                    altNamesToRemove.Add(jobId);
+                }
+            }
+            foreach (var jobId in altNamesToRemove)
+                _jobAlternativeNames.Remove(jobId);
+            // Sunrise-End
 
             // Checks prototypes exist for all loadouts and dump / set to default if not.
             var toRemove = new ValueList<string>();

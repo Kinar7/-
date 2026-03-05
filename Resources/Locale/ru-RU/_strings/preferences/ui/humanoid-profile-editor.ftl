@@ -58,3 +58,5 @@ trait-category-quirks = Причуды
 humanoid-profile-editor-height-label = Рост: { $height }cm
 humanoid-profile-editor-width-label = Вес: { $weight }kg
 humanoid-profile-editor-slider-reset = Сбросить
+
+humanoid-profile-editor-job-alt-name-tooltip = Выберите альтернативное название для этой работы

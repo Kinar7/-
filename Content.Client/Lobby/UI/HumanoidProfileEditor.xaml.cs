@@ -101,6 +101,10 @@ namespace Content.Client.Lobby.UI
 
         private List<(string, RequirementsSelector)> _jobPriorities = new();
 
+        // Sunrise-Start: stores the alt-name OptionButton per job (only for jobs with alternatives)
+        private readonly Dictionary<ProtoId<JobPrototype>, OptionButton> _jobAltNameSelectors = new();
+        // Sunrise-End
+
         private readonly Dictionary<string, BoxContainer> _jobCategories;
 
         private Direction _previewRotation = Direction.North;
@@ -1005,6 +1009,7 @@ namespace Content.Client.Lobby.UI
             JobList.RemoveAllChildren();
             _jobCategories.Clear();
             _jobPriorities.Clear();
+            _jobAltNameSelectors.Clear(); // Sunrise
             var firstCategory = true;
 
             // Get all displayed departments
@@ -1198,6 +1203,39 @@ namespace Content.Client.Lobby.UI
                     jobContainer.AddChild(selector);
                     jobContainer.AddChild(loadoutWindowBtn);
                     category.AddChild(jobContainer);
+
+                    // Sunrise-Start: add alt-name dropdown for jobs that have alternative display names.
+                    if (job.AlternativeNames.Count > 0)
+                    {
+                        var altButton = new OptionButton
+                        {
+                            HorizontalExpand = true,
+                            Margin = new Thickness(3f, 0f, 3f, 3f),
+                            ToolTip = Loc.GetString("humanoid-profile-editor-job-alt-name-tooltip"),
+                        };
+
+                        // First option is always the default job name (no override).
+                        altButton.AddItem(job.LocalizedName, -1);
+                        for (var i = 0; i < job.AlternativeNames.Count; i++)
+                        {
+                            altButton.AddItem(job.AlternativeNames[i].LocalizedName, i);
+                        }
+
+                        // Restore previously saved selection.
+                        SyncAltNameSelector(job, altButton);
+
+                        altButton.OnItemSelected += args =>
+                        {
+                            altButton.SelectId(args.Id);
+                            var altKey = args.Id >= 0 ? job.AlternativeNames[args.Id].Name : null;
+                            Profile = Profile?.WithJobAlternativeName(job.ID, altKey);
+                            SetDirty();
+                        };
+
+                        _jobAltNameSelectors[job.ID] = altButton;
+                        category.AddChild(altButton);
+                    }
+                    // Sunrise-End
                 }
             }
 
@@ -1551,7 +1589,34 @@ namespace Content.Client.Lobby.UI
                 var priority = Profile?.JobPriorities.GetValueOrDefault(jobId, JobPriority.Never) ?? JobPriority.Never;
                 prioritySelector.Select((int) priority);
             }
+
+            // Sunrise-Start: sync alt-name dropdowns with the current profile.
+            foreach (var (jobId, altButton) in _jobAltNameSelectors)
+            {
+                if (_prototypeManager.TryIndex<JobPrototype>(jobId, out var jobProto))
+                    SyncAltNameSelector(jobProto, altButton);
+            }
+            // Sunrise-End
         }
+
+        // Sunrise-Start
+        /// <summary>
+        /// Selects the correct item in <paramref name="altButton"/> based on the current profile's stored
+        /// alternative name preference for <paramref name="job"/>.
+        /// </summary>
+        private void SyncAltNameSelector(JobPrototype job, OptionButton altButton)
+        {
+            if (Profile?.JobAlternativeNames.TryGetValue(job.ID, out var savedKey) == true)
+            {
+                var idx = job.AlternativeNames.FindIndex(a => a.Name == savedKey);
+                altButton.SelectId(idx >= 0 ? idx : -1);
+            }
+            else
+            {
+                altButton.SelectId(-1);
+            }
+        }
+        // Sunrise-End
 
         private void UpdateSexControls()
         {
