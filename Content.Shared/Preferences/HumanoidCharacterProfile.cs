@@ -588,6 +588,9 @@ namespace Content.Shared.Preferences
             if (!_traitPreferences.SequenceEqual(other._traitPreferences)) return false;
             if (!Loadouts.SequenceEqual(other.Loadouts)) return false;
             if (FlavorText != other.FlavorText) return false;
+            // Sunrise-Start
+            if (!_jobAlternativeNames.SequenceEqual(other._jobAlternativeNames)) return false;
+            // Sunrise-End
             return Appearance.MemberwiseEquals(other.Appearance);
         }
 

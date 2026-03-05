@@ -1205,12 +1205,16 @@ namespace Content.Client.Lobby.UI
                     category.AddChild(jobContainer);
 
                     // Sunrise-Start: add alt-name dropdown for jobs that have alternative display names.
+                    // It is placed compactly under the job title (sized ~200 px to match the title label).
                     if (job.AlternativeNames.Count > 0)
                     {
+                        // Left margin = icon-width (16) + selector.Margin.Left (3) so the dropdown
+                        // visually sits beneath the job-name label.
                         var altButton = new OptionButton
                         {
-                            HorizontalExpand = true,
-                            Margin = new Thickness(3f, 0f, 3f, 3f),
+                            HorizontalAlignment = HAlignment.Left,
+                            MinSize = new Vector2(200, 0),
+                            Margin = new Thickness(19f, 0f, 3f, 3f),
                             ToolTip = Loc.GetString("humanoid-profile-editor-job-alt-name-tooltip"),
                         };
 
